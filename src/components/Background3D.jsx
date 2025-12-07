@@ -1,48 +1,41 @@
-import { useEffect, useRef } from 'react';
-import NET from 'vanta/dist/vanta.net.min';
-import * as THREE from 'three';
+import { useRef, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Points, PointMaterial } from '@react-three/drei';
+import * as random from 'maath/random/dist/maath-random.esm';
 
-const Background3D = () => {
-    const vantaRef = useRef(null);
-    const vantaEffect = useRef(null);
+const ParticleField = (props) => {
+    const ref = useRef();
+    const sphere = useMemo(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }), []);
 
-    useEffect(() => {
-        if (vantaRef.current && !vantaEffect.current) {
-            vantaEffect.current = NET({
-                el: vantaRef.current,
-                THREE: THREE,
-                mouseControls: true,
-                touchControls: true,
-                gyroControls: false,
-                minHeight: 200.00,
-                minWidth: 200.00,
-                scale: 1.00,
-                scaleMobile: 1.00,
-                color: 0x3b82f6, // Blue network lines
-                backgroundColor: 0x0a0a0a, // Almost black background
-                points: 12.00, // Number of connection points
-                maxDistance: 20.00, // Max distance for connections
-                spacing: 15.00, // Space between points
-                showDots: true
-            });
+    useFrame((state, delta) => {
+        if (ref.current) {
+            ref.current.rotation.x -= delta / 10;
+            ref.current.rotation.y -= delta / 15;
         }
-
-        return () => {
-            if (vantaEffect.current) {
-                vantaEffect.current.destroy();
-                vantaEffect.current = null;
-            }
-        };
-    }, []);
+    });
 
     return (
-        <div
-            ref={vantaRef}
-            className="fixed top-0 left-0 w-full h-full -z-10"
-            style={{
-                background: 'radial-gradient(ellipse at top, #1a1a2e 0%, #0a0a0a 50%, #000000 100%)'
-            }}
-        />
+        <group rotation={[0, 0, Math.PI / 4]}>
+            <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+                <PointMaterial
+                    transparent
+                    color="#4338ca" // Indigo-700
+                    size={0.002}
+                    sizeAttenuation={true}
+                    depthWrite={false}
+                />
+            </Points>
+        </group>
+    );
+};
+
+const Background3D = () => {
+    return (
+        <div className="fixed top-0 left-0 w-full h-full -z-10 bg-slate-950">
+            <Canvas camera={{ position: [0, 0, 1] }}>
+                <ParticleField />
+            </Canvas>
+        </div>
     );
 };
 

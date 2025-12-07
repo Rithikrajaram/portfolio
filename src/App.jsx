@@ -57,7 +57,7 @@ function App() {
         />
 
         {/* 3D Content Layer */}
-        <Background3D />
+        {/* <Background3D /> */}
 
         {/* Main Content Layer */}
         <div className="relative z-10">
